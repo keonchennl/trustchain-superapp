@@ -19,6 +19,7 @@ import nl.tudelft.trustchain.literaturedao.ipv8.LiteratureCommunity
 import java.io.File
 import java.io.FileOutputStream
 import nl.tudelft.trustchain.literaturedao.controllers.QueryHandler
+import nl.tudelft.trustchain.literaturedao.controllers.FileStorageController
 import java.io.InputStream
 import java.util.*
 import kotlin.math.roundToInt
@@ -43,7 +44,13 @@ open class LiteratureDaoActivity : BaseActivity() {
         this.window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN)
         supportActionBar?.hide();
 
+        Log.d("litdao", applicationContext.cacheDir.absolutePath)
 
+        // This is how you initialise the FileStorageController
+        // the applicationCOntext needs to be passed from a place where it's accessible, such as here
+        val docController = FileStorageController(applicationContext.cacheDir.absolutePath)
+
+        Log.d("litdao", docController.listFiles().size.toString())
         //test seeding
 //        val folderToShare = "assets"
 ////        val tor = SharedTorrent.create(albumFile, list, 65535, listOf(), "TrustChain-Superapp")
@@ -107,7 +114,6 @@ open class LiteratureDaoActivity : BaseActivity() {
             .extract(keywordExtractorInput, csv)
         return result
     }
-
 
     fun save(path: String, KWList: MutableList<Pair<String, Double>>){
         tempStorage.add(Pair(path, KWList))

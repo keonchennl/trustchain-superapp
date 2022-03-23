@@ -1,23 +1,36 @@
 package nl.tudelft.trustchain.literaturedao.controllers
 
-import nl.tudelft.trustchain.literaturedao.*
+import android.util.Log
 import java.io.*
 
 /**
  * Controller for file storage.
  * Save new files, get existing files, remove files.
  */
-class FileStorageController : LiteratureDaoActivity() {
+class FileStorageController(val cacheDir : String) {
 
-    val directory : String = "/direcotry/to/internal/storage/"
+    val directory: String = cacheDir + "/literaturedao/documents/"
+
+    init {
+        val file = File(directory)
+        if (!(file.exists() && file.isDirectory)) {
+            file.mkdirs()
+        }
+    }
 
     /**
      * This method saves a file in the internal android storage and returns path to the file (uri).
      *
      * Throws an exception if file with the same name already exists.
      */
-    fun saveFile(file: File) : String {
-        return "" // replace with path to file
+    fun saveFile(file: File): String {
+
+        val from = file.inputStream()
+        val to = File(directory + file.name).outputStream()
+
+        from.copyTo(to)
+
+        return file.name
     }
 
     /**
@@ -25,8 +38,14 @@ class FileStorageController : LiteratureDaoActivity() {
      *
      * Throws exception if no file found.
      */
-    fun getFile(uri: String) : File {
-        return File.createTempFile("", "") // replace with retrieved file
+    fun getFile(fileName: String): File {
+
+        val file = File(directory + fileName)
+        if (!file.isFile) {
+            throw IOException("No file with name '$fileName' found in literaturedao document folder.")
+        }
+
+        return file
     }
 
     /**
@@ -34,8 +53,15 @@ class FileStorageController : LiteratureDaoActivity() {
      *
      * Throws exception if no file found at uri.
      */
-    fun removeFile(file: File) {
-        // remove the file
+    fun removeFile(fileName: String) {
+        File(directory + fileName).delete()
+    }
+
+    /**
+     * Returns a list of all files in the literaturedao document folder.
+     */
+    fun listFiles(): Array<File> {
+        return File(directory).listFiles()
     }
 
 }
