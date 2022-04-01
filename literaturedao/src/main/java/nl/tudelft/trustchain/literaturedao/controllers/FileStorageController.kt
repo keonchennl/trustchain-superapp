@@ -1,6 +1,7 @@
 package nl.tudelft.trustchain.literaturedao.controllers
 
 import android.util.Log
+import com.frostwire.jlibtorrent.swig.operation_t.file
 import java.io.*
 
 /**
@@ -31,6 +32,12 @@ class FileStorageController(val cacheDir : String) {
         from.copyTo(to)
 
         return file.name
+    }
+
+    fun saveFileStream(fileName: String, fileStream: FileInputStream) {
+        val to = File(directory + fileName).outputStream()
+
+        fileStream.copyTo(to)
     }
 
     /**

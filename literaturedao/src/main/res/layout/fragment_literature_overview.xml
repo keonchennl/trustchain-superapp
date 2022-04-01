@@ -2,7 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
+    tools:context=".ui.MyLiteratureFragment"
 
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -130,17 +130,17 @@
 
                     <androidx.fragment.app.FragmentContainerView
                         android:id="@+id/fragmentContainerView"
-                        android:name="nl.tudelft.trustchain.literaturedao.LiteratureFragment"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        app:layout_column="0"
+                        app:layout_row="0"
                         tools:layout="@layout/fragment_literature" />
 
                     <androidx.fragment.app.FragmentContainerView
                         android:id="@+id/fragmentContainerView4"
-                        android:name="nl.tudelft.trustchain.literaturedao.LiteratureFragment"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        app:layout_column="1"
+                        app:layout_column="0"
                         tools:layout="@layout/fragment_literature" />
 
                 </androidx.gridlayout.widget.GridLayout>

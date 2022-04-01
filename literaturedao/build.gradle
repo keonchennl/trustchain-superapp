@@ -32,6 +32,9 @@ dependencies {
     implementation project(':common')
     api project(':common')
 
+    // Torrent
+    implementation 'com.turn:ttorrent-core:1.5'
+
     // AndroidX
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
