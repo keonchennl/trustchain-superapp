@@ -1,9 +1,10 @@
 package nl.tudelft.trustchain.literaturedao.ui
 
-import android.content.res.AssetFileDescriptor
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import com.frostwire.jlibtorrent.TorrentInfo
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.turn.ttorrent.client.SharedTorrent
@@ -31,7 +32,6 @@ class MyLiteratureFragment : BaseFragment(R.layout.fragment_literature_overview)
     override fun onDestroy() {
         super.onDestroy()
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -108,10 +108,6 @@ class MyLiteratureFragment : BaseFragment(R.layout.fragment_literature_overview)
 
     var tempStorage: MutableList<Pair<String, MutableList<Pair<String, Double>>>> = mutableListOf<Pair<String, MutableList<Pair<String, Double>>>>()
 
-    override fun onStart() {
-        super.onStart()
-        Log.e("litdao", "starting ...")
-    }
 
     fun parsePDF() {
         PDFBoxResourceLoader.init(context);
