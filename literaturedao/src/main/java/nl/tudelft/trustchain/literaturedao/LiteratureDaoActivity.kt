@@ -73,11 +73,9 @@ open class LiteratureDaoActivity : BaseActivity() {
             Log.e("litdao", "starting ...")
 
             copyDefaultLiterature()
-
             literatureGossiper =
                 IPv8Android.getInstance().getOverlay<LiteratureCommunity>()?.let { LiteratureGossiper.getInstance(s, this, it) }
             literatureGossiper?.start()
-
 
         } catch (e: Exception) {
             printToast(e.toString())

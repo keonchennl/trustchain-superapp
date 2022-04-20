@@ -74,7 +74,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".LiteratureOverview">
+            tools:context="nl.tudelft.trustchain.literaturedao.LiteratureDaoActivity">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -131,7 +131,7 @@
 
                     <androidx.fragment.app.FragmentContainerView
                         android:id="@+id/fragmentContainerView"
-                        android:name="nl.tudelft.trustchain.literaturedao.LiteratureFragment"
+                        android:name="nl.tudelft.trustchain.literaturedao.ui.MyLiteratureFragment"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         app:layout_column="1"
@@ -145,7 +145,7 @@
 
                     <androidx.fragment.app.FragmentContainerView
                         android:id="@+id/fragmentContainerView4"
-                        android:name="nl.tudelft.trustchain.literaturedao.LiteratureFragment"
+                        android:name="nl.tudelft.trustchain.literaturedao.ui.LiteratureFragment"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         app:layout_column="1"

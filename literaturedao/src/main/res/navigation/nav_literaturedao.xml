@@ -8,7 +8,7 @@
         android:id="@+id/MyLiteratureFragment"
         android:name="nl.tudelft.trustchain.literaturedao.ui.MyLiteratureFragment"
         android:label="My Literature"
-        tools:layout="@layout/fragment_literature_add" />
+        tools:layout="@layout/fragment_literature_overview" />
     <fragment
         android:id="@+id/LibraryFragment"
         android:name="nl.tudelft.trustchain.literaturedao.ui.LibraryFragment"
