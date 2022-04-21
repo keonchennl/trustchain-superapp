@@ -7,17 +7,14 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.SearchView
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
-import kotlinx.coroutines.*
 import android.widget.Toast
 import androidx.documentfile.provider.DocumentFile
 import com.frostwire.jlibtorrent.SessionManager
 import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.Vectors
 import com.frostwire.jlibtorrent.swig.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -31,14 +28,14 @@ import nl.tudelft.trustchain.literaturedao.controllers.PdfController
 import nl.tudelft.trustchain.literaturedao.controllers.QueryHandler
 import nl.tudelft.trustchain.literaturedao.ipv8.LiteratureCommunity
 import nl.tudelft.trustchain.literaturedao.ui.KeyWordModelView
-import java.io.*
 import nl.tudelft.trustchain.literaturedao.utils.ExtensionUtils.Companion.torrentDotExtension
 import nl.tudelft.trustchain.literaturedao.utils.MagnetUtils.Companion.displayNameAppender
 import nl.tudelft.trustchain.literaturedao.utils.MagnetUtils.Companion.preHashString
-import java.lang.Exception
+import java.io.*
 import java.util.*
-import kotlin.math.roundToInt
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.math.roundToInt
+
 
 const val DEFAULT_LITERATURE = "1.pdf"
 
