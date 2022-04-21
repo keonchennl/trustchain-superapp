@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.roundToInt
 
 
-const val DEFAULT_LITERATURE = "1.pdf"
+const val DEFAULT_LITERATURE = "2.pdf"
 
 open class LiteratureDaoActivity : BaseActivity() {
     override val navigationGraph = R.navigation.nav_literaturedao
@@ -266,7 +266,10 @@ open class LiteratureDaoActivity : BaseActivity() {
                 outputStream.write(ins.readBytes())
                 ins.close()
                 outputStream.close()
-                this.createTorrent(DEFAULT_LITERATURE)
+                val torrent = this.createTorrent(DEFAULT_LITERATURE)
+                if (torrent != null) {
+                    literatureGossiper?.addTorrentInfo(torrent)
+                }
             }
         } catch (e: Exception) {
             this.printToast(e.toString())
@@ -277,8 +280,9 @@ open class LiteratureDaoActivity : BaseActivity() {
      * Creates a torrent from a file given as input
      * The extension of the file must be included (for example, .png)
      */
-    private fun createTorrent(fileName: String): TorrentInfo? {
-        val file = File(applicationContext.cacheDir.absolutePath + "/" + fileName.split("/").last())
+    fun createTorrent(filePath: String): TorrentInfo? {
+        val file = File(filePath)
+//        val file = File(applicationContext.cacheDir.absolutePath + "/" + fileName.split("/").last())
         if (!file.exists()) {
             runOnUiThread { printToast("Something went wrong, check logs") }
             Log.i("litdao", "File doesn't exist!")
@@ -302,7 +306,7 @@ open class LiteratureDaoActivity : BaseActivity() {
         val torrent = ct.generate()
         val buffer = torrent.bencode()
 
-        val torrentName = fileName.substringBeforeLast('.') + torrentDotExtension
+        val torrentName = filePath.substringBeforeLast('.') + torrentDotExtension
 
         var os: OutputStream? = null
         try {
@@ -321,7 +325,7 @@ open class LiteratureDaoActivity : BaseActivity() {
         val ti = TorrentInfo.bdecode(Vectors.byte_vector2bytes(buffer))
         val magnetLink = preHashString + ti.infoHash() + displayNameAppender + ti.name()
         Log.i("litdao", magnetLink)
-        runOnUiThread { printToast(fileName) }
+        runOnUiThread { printToast(filePath) }
         return ti
     }
 
@@ -377,6 +381,13 @@ open class LiteratureDaoActivity : BaseActivity() {
                     importFromInternalStorage(d)
                     Log.d("litdao", "file name: " + d.name)
                     Log.d("litdao", "file path: " + d.uri.path)
+                    Log.d("litdao", "file exists? " + d.exists().toString())
+//                    copyFile(File(d.uri.path.toString().substringAfter(":")), File(applicationContext.cacheDir.absolutePath + "/" + d.name))
+//                    createTorrent(d.name.toString())
+                    val newTorrent = createTorrent(d.uri.path.toString())
+                    if (newTorrent != null) {
+                        literatureGossiper?.addTorrentInfo(newTorrent)
+                    }
                     var intent = Intent(Intent.ACTION_VIEW);
                     intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.setDataAndType(d.uri, "application/pdf");
@@ -393,7 +404,30 @@ open class LiteratureDaoActivity : BaseActivity() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"
         startActivityForResult(intent, 100)
+    }
 
+    /**
+     * copy file from source to destination
+     *
+     * @param src source
+     * @param dst destination
+     * @throws java.io.IOException in case of any problems
+     */
+    @Throws(IOException::class)
+    fun copyFile(src: File?, dst: File?) {
+        try {
+            val inChannel = FileInputStream(src).channel
+            val outChannel = FileOutputStream(dst).channel
+
+            try {
+                inChannel.transferTo(0, inChannel.size(), outChannel)
+            } finally {
+                inChannel.close()
+                outChannel.close()
+            }
+        } catch (e: FileNotFoundException) {
+            Log.e("litdao", e.toString())
+        }
     }
 
 
