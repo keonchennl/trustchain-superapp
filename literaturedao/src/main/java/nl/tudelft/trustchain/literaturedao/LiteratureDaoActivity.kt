@@ -30,6 +30,7 @@ import nl.tudelft.trustchain.literaturedao.controllers.KeywordExtractor
 import nl.tudelft.trustchain.literaturedao.controllers.PdfController
 import nl.tudelft.trustchain.literaturedao.controllers.QueryHandler
 import nl.tudelft.trustchain.literaturedao.ipv8.LiteratureCommunity
+import nl.tudelft.trustchain.literaturedao.ipv8.SearchResultList
 import nl.tudelft.trustchain.literaturedao.ui.KeyWordModelView
 import java.io.*
 import nl.tudelft.trustchain.literaturedao.utils.ExtensionUtils.Companion.torrentDotExtension
@@ -154,6 +155,18 @@ open class LiteratureDaoActivity : BaseActivity() {
         return handler.scoreList(inp, loadMetaData().content)
     }
 
+    fun remoteSeach() {
+        // get query from UI
+        val query = "TODO"
+
+        // send to peers
+        IPv8Android.getInstance().getOverlay<LiteratureCommunity>()!!.broadcastSearchQuery(query)
+    }
+
+    fun updateSearchResults(results: SearchResultList){
+        // access UI and append results to some view
+    }
+
     fun writeMetaData(newData: KeyWordModelView.Data){
         metaDataLock.lock()
         this.openFileOutput("metaData", Context.MODE_PRIVATE).use { output ->
@@ -256,7 +269,7 @@ open class LiteratureDaoActivity : BaseActivity() {
      * Creates a torrent from a file given as input
      * The extension of the file must be included (for example, .png)
      */
-    private fun createTorrent(fileName: String): TorrentInfo? {
+    fun createTorrent(fileName: String): TorrentInfo? {
         val file = File(applicationContext.cacheDir.absolutePath + "/" + fileName.split("/").last())
         if (!file.exists()) {
             runOnUiThread { printToast("Something went wrong, check logs") }
