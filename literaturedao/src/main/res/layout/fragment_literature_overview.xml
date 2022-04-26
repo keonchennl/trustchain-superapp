@@ -109,7 +109,10 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:id="@+id/searchViewLit"
-                            android:background="#F5F9FC" />
+                            android:background="#F5F9FC"
+                            android:queryHint="Title, Author, Keywords ..."
+                            android:iconifiedByDefault="false"
+                            />
 
                     </LinearLayout>
 
