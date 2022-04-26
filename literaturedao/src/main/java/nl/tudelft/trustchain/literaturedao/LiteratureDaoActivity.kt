@@ -1,16 +1,19 @@
 package nl.tudelft.trustchain.literaturedao
 import LiteratureGossiper
-import android.annotation.SuppressLint
 import android.content.Context
+import android.Manifest
 import android.content.Intent
 import android.os.Build
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatDelegate
+import android.widget.Button
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.documentfile.provider.DocumentFile
 import com.frostwire.jlibtorrent.SessionManager
 import com.frostwire.jlibtorrent.TorrentInfo
@@ -65,6 +68,7 @@ open class LiteratureDaoActivity : BaseActivity() {
     var remoteSearchList: MutableList<String> = mutableListOf()
     lateinit var remoteSearchListAdapter : ArrayAdapter<*>
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val literatureCommunity = IPv8Android.getInstance().getOverlay<LiteratureCommunity>()!!
@@ -92,7 +96,7 @@ open class LiteratureDaoActivity : BaseActivity() {
             literatureGossiper =
                 IPv8Android.getInstance().getOverlay<LiteratureCommunity>()?.let { LiteratureGossiper.getInstance(s, this, it) }
             literatureGossiper?.start()
-
+            checkStoragePermissions()
 
         } catch (e: Exception) {
             printToast(e.toString())
@@ -302,7 +306,6 @@ open class LiteratureDaoActivity : BaseActivity() {
             Log.e("litdao", "litDao exception: " + e.toString())
        }*/
 
-
     /**
      * Display a short message on the screen
      */
@@ -486,6 +489,40 @@ open class LiteratureDaoActivity : BaseActivity() {
         }
     }
 
+    /**
+     * Check camera permissions
+     */
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun checkStoragePermissions() {
+        if ((ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSION_STORAGE_REQUEST_CODE
+            )
+        }
+    }
 
+    /**
+     * Process permission result
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == PERMISSION_STORAGE_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                Log.d("litdao", "STORAGE PERMISSION GRANTED")
+                printToast(resources.getString(R.string.litdao_permission_storage_granted))
+            } else {
+                Log.d("litdao", "STORAGE PERMISSION NOT GRANTED")
+                printToast(resources.getString(R.string.litdao_permission_denied))
+                finish()
+            }
+        }
+    }
 
+    companion object {
+        const val PERMISSION_STORAGE_REQUEST_CODE = 2
+    }
 }
