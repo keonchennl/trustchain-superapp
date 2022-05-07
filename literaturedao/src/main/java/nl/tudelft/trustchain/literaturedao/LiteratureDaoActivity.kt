@@ -2,6 +2,7 @@ package nl.tudelft.trustchain.literaturedao
 
 import LiteratureGossiper
 import android.content.Context
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -73,6 +74,7 @@ open class LiteratureDaoActivity : BaseActivity() {
     var remoteSearchList: MutableList<String> = mutableListOf()
     lateinit var remoteSearchListAdapter : ArrayAdapter<*>
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -119,7 +121,6 @@ open class LiteratureDaoActivity : BaseActivity() {
             literatureGossiper =
                 IPv8Android.getInstance().getOverlay<LiteratureCommunity>()?.let { LiteratureGossiper.getInstance(s, this, it) }
             literatureGossiper?.start()
-
 
         } catch (e: Exception) {
             printToast(e.toString())
@@ -188,6 +189,8 @@ open class LiteratureDaoActivity : BaseActivity() {
             recViewItems.setAdapter(itemAdapter)
             itemAdapter.refresh()
             */
+
+            checkStoragePermissions()
         } catch(e: Exception){
             Log.e("litdao", e.toString())
         }
@@ -311,7 +314,6 @@ open class LiteratureDaoActivity : BaseActivity() {
         } catch (e: Exception){
             Log.e("litdao", "litDao exception: " + e.toString())
        }*/
-
 
     /**
      * Display a short message on the screen
@@ -503,12 +505,12 @@ open class LiteratureDaoActivity : BaseActivity() {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-
-    //fun filePicker(view: View) {
-    //    val intent = Intent(Intent.ACTION_GET_CONTENT)
-    //    intent.type = "*/*"
-    //    startActivityForResult(intent, 100)
-    //}
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun filePicker(view: View) {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "*/*"
+        startActivityForResult(intent, 100)
+    }
 
     /**
      * copy file from source to destination
@@ -534,4 +536,40 @@ open class LiteratureDaoActivity : BaseActivity() {
         }
     }
 
+    /**
+     * Check storage permissions
+     */
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun checkStoragePermissions() {
+        if ((ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSION_STORAGE_REQUEST_CODE
+            )
+        }
+    }
+
+    /**
+     * Process permission result
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == PERMISSION_STORAGE_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                Log.d("litdao", "STORAGE PERMISSION GRANTED")
+                printToast(resources.getString(R.string.litdao_permission_storage_granted))
+            } else {
+                Log.d("litdao", "STORAGE PERMISSION NOT GRANTED")
+                printToast(resources.getString(R.string.litdao_permission_denied))
+                finish()
+            }
+        }
+    }
+
+    companion object {
+        const val PERMISSION_STORAGE_REQUEST_CODE = 2
+    }
 }

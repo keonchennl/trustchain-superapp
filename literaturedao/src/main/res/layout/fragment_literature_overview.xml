@@ -108,7 +108,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:background="#F5F9FC" />
+                            android:id="@+id/searchViewLit"
+                            android:background="#F5F9FC"
+                            android:queryHint="Title, Author, Keywords ..."
+                            android:iconifiedByDefault="false"
+                            />
 
                     </LinearLayout>
 
@@ -122,11 +126,11 @@
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/button2"
+                    android:id="@+id/litdao_pick_file_button"
                     android:layout_width="141dp"
                     android:layout_height="wrap_content"
                     android:onClick="filePicker"
-                    android:text="Select File" />
+                    android:text="@string/litdao_file_picker_button_text" />
 
 
                 <androidx.recyclerview.widget.RecyclerView
