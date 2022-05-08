@@ -108,10 +108,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:background="#F5F9FC"
-                            android:queryHint="Title, Author, Keywords ..."
-                            android:iconifiedByDefault="false"
-                            />
+                            android:background="#F5F9FC" />
 
                     </LinearLayout>
 
@@ -125,11 +122,10 @@
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/litdao_pick_file_button"
+                    android:id="@+id/upload_new_literatuteBtn"
                     android:layout_width="141dp"
                     android:layout_height="wrap_content"
-                    android:onClick="filePicker"
-                    android:text="@string/litdao_file_picker_button_text" />
+                    android:text="Select File" />
 
 
                 <androidx.recyclerview.widget.RecyclerView
