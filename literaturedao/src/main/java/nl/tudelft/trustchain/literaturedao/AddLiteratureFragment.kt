@@ -26,6 +26,8 @@ import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.Vectors
 import com.frostwire.jlibtorrent.swig.*
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -69,6 +71,12 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
         val submitFileUpload: Button = view.findViewById(R.id.submit_new_lirterature) as Button
         val urlTextField: EditText = view.findViewById(R.id.url_text_field) as EditText
 
+        //inside Fragment
+        val job = Job()
+        val uiScope = CoroutineScope(Dispatchers.Main + job)
+
+
+
         selectFileUpload.setOnClickListener {
             // do something
             val intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -85,13 +93,14 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
         submitFileUpload.setOnClickListener  {
             try {
                 //TODO: Start Loading animation and start thread
-                activity?.runOnUiThread {
-                    view.findViewById<LinearLayout>(R.id.add_literature_content).visibility = View.GONE
-                    view.findViewById<LinearLayout>(R.id.add_literature_loading).visibility = View.VISIBLE
-                }
 
-                lifecycleScope.launch {
 
+                uiScope.launch(Dispatchers.IO) {
+
+                    withContext(Dispatchers.Main) {
+                        view.findViewById<LinearLayout>(R.id.add_literature_content).visibility = View.GONE
+                        view.findViewById<LinearLayout>(R.id.add_literature_loading).visibility = View.VISIBLE
+                    }
 
                     // TODO: Select where you want to select the file from;
                     // case 1: A file location/URI is selected in selectedFile.uri
@@ -104,7 +113,7 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
 
                     PDFBoxResourceLoader.init(activity?.baseContext)
 
-                    val strippedString = PdfController().stripText(pdf!!)
+                    val strippedString = stripText(pdf!!)
                     val kws: MutableList<Pair<String, Double>>
 
                     // initilaizing freq's
@@ -132,6 +141,7 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
                         Calendar.getInstance().getTime().toString(),
                         selectedFile.getUri().toString())
                     print(newLiterature)
+
 
 
                     // Load local data
@@ -181,6 +191,32 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
         }
         // Inflate the layout for this fragment
         return view
+    }
+
+    fun stripText(file: InputStream): String {
+        var parsedText = ""
+        var document: PDDocument? = null
+
+        try {
+            document = PDDocument.load(file)
+        } catch (e: IOException) {
+            Log.e("PdfBox-Android-Sample", "Exception thrown while loading document to strip", e)
+        }
+
+        try {
+            val pdfStripper = PDFTextStripper()
+            parsedText = pdfStripper.getText(document)
+        } catch (e: IOException) {
+            Log.e("PdfBox-Android-Sample", "Exception thrown while stripping text", e)
+        } finally {
+            try {
+                document?.close()
+            } catch (e: IOException) {
+                Log.e("PdfBox-Android-Sample", "Exception thrown while closing document", e)
+            }
+        }
+
+        return parsedText
     }
 
     /**
