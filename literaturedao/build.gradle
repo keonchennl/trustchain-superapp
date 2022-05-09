@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'kotlin-android-extensions'
 }
 
 apply plugin: 'kotlinx-serialization'
@@ -22,6 +23,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -32,6 +34,7 @@ android {
 }
 
 dependencies {
+    // Other classpath declarations
     implementation project(':common')
     api project(':common')
 
@@ -68,4 +71,9 @@ dependencies {
     implementation 'io.github.microutils:kotlin-logging:1.7.7'
 
     implementation 'com.tom-roush:pdfbox-android:2.0.16.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.databinding:databinding-runtime:4.2.2'
+
+    // File io
+    implementation 'commons-io:commons-io:2.11.0'
 }

@@ -1,21 +1,33 @@
 package nl.tudelft.trustchain.literaturedao
+
 import LiteratureGossiper
 import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import kotlinx.serialization.Serializable
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.Toast
+import android.widget.*
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.databinding.DataBindingUtil
 import androidx.documentfile.provider.DocumentFile
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.frostwire.jlibtorrent.SessionManager
 import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.Vectors
 import com.frostwire.jlibtorrent.swig.*
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+//import kotlinx.android.synthetic.main.fragment_literature_overview.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -27,6 +39,8 @@ import nl.tudelft.trustchain.literaturedao.controllers.KeywordExtractor
 import nl.tudelft.trustchain.literaturedao.controllers.PdfController
 import nl.tudelft.trustchain.literaturedao.controllers.QueryHandler
 import nl.tudelft.trustchain.literaturedao.ipv8.LiteratureCommunity
+import nl.tudelft.trustchain.literaturedao.ipv8.SearchResult
+import nl.tudelft.trustchain.literaturedao.ipv8.SearchResultList
 import nl.tudelft.trustchain.literaturedao.ui.KeyWordModelView
 import nl.tudelft.trustchain.literaturedao.utils.ExtensionUtils.Companion.torrentDotExtension
 import nl.tudelft.trustchain.literaturedao.utils.MagnetUtils.Companion.displayNameAppender
@@ -34,14 +48,19 @@ import nl.tudelft.trustchain.literaturedao.utils.MagnetUtils.Companion.preHashSt
 import java.io.*
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 
-const val DEFAULT_LITERATURE = "1.pdf"
+const val DEFAULT_LITERATURE = "2.pdf"
 
 open class LiteratureDaoActivity : BaseActivity() {
+
+    // Setting Menu And Default routing
     override val navigationGraph = R.navigation.nav_literaturedao
     override val bottomNavigationMenu = R.menu.literature_navigation_menu
+    private val myLiteratureFragment = MyLiteratureFragment();
+
     val metaDataLock = ReentrantLock()
     private val scope = CoroutineScope(Dispatchers.IO)
     var torrentList = ArrayList<Button>()
@@ -56,20 +75,41 @@ open class LiteratureDaoActivity : BaseActivity() {
     var freqMap = emptyMap<String, Long>()
     var freqMapInitialized = false
 
+    var remoteSearchList: MutableList<String> = mutableListOf()
+    lateinit var remoteSearchListAdapter : ArrayAdapter<*>
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+        /*
+        setContentView(R.layout.activity_main);
+
+
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.fragment_container,myLiteratureFragment)
+        transaction.commit();
+*/
+
+
         val literatureCommunity = IPv8Android.getInstance().getOverlay<LiteratureCommunity>()!!
         printPeersInfo(literatureCommunity)
         val myName = literatureCommunity.myPeer.mid
         Log.i("litdao","I am $myName and Im broadcasting: hello")
         literatureCommunity.broadcastDebugMessage("hello")
         val parent = this
-        scope.launch {
+
+        /*scope.launch {
             instantiateAvgFreqMap(parent)
         }
+        */
+
         val demoCommunity = IPv8Android.getInstance().getOverlay<DemoCommunity>()!!
         val demoCommunityName = demoCommunity.myPeer.mid
         Log.i("personal","I am $demoCommunityName and Im broadcasting a message")
+
+
         demoCommunity.broadcastGreeting()
 
         this.window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -78,12 +118,13 @@ open class LiteratureDaoActivity : BaseActivity() {
         try {
             Log.e("litdao", "starting ...")
 
-            copyDefaultLiterature()
+            copyDefaultLiterature();
+
+            // TODO fetch all local literatures.
 
             literatureGossiper =
                 IPv8Android.getInstance().getOverlay<LiteratureCommunity>()?.let { LiteratureGossiper.getInstance(s, this, it) }
             literatureGossiper?.start()
-
 
         } catch (e: Exception) {
             printToast(e.toString())
@@ -102,12 +143,70 @@ open class LiteratureDaoActivity : BaseActivity() {
 //        val magnet = torrentInfo.makeMagnetUri()
 //        val torrentInfoName = torrentInfo.name()
 
+        /*
+        // TODO: UI CONNECTION FOR REMOTE SEARCH
+        setContentView(R.layout.fragment_library_search)
+        val remoteSearch = findViewById<SearchView>(R.id.remote_search_bar)
+        remoteSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                Log.i("litdao", "perform remote search with: "+query)
+                if(!query.isNullOrBlank()){
+                    remoteSeach(query)
+                    return true
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                Log.i("litdao", "remote search text changed to: "+query)
+                return true
+            }
+        })
+
+        remoteSearchListAdapter = ArrayAdapter(this, R.layout.fragment_library_search_row, remoteSearchList)
+        findViewById<ListView>(R.id.remote_search_results).adapter = remoteSearchListAdapter
+        */
+
+        try{
+
+            val items : ArrayList<String> = arrayListOf("item 1" , "Item 2");
+            Log.e("litdao", items.toString())
+
+            //val inflatedView: View = layoutInflater.inflate(R.layout.fragment_literature_overview, null)
+
+            /*
+            val recViewItems = findViewById<RecyclerView>(R.id.recycler_view_items);
+
+
+
+            recViewItems.layoutManager = LinearLayoutManager(this )
+            recViewItems.adapter = ItemAdapter(items);
+            */
+
+            // Adapter class is initialized and list is passed in the param.
+            /*val itemAdapter = ItemAdapter(this, items)
+
+            // Set the LayoutManager that this RecyclerView will use.
+            recViewItems.setLayoutManager(LinearLayoutManager(itemAdapter.context))
+
+            // adapter instance is set to the recyclerview to inflate the items.
+            recViewItems.setAdapter(itemAdapter)
+            itemAdapter.refresh()
+            */
+
+            checkStoragePermissions()
+        } catch(e: Exception){
+            Log.e("litdao", e.toString())
+        }
     }
+
+
     fun initFreqMap(inp: Map<String, Long>){
         this.freqMap = inp
         this.freqMapInitialized = true
         Log.d("litdao", "Init of freq map complete")
     }
+
     // Function that loads the average stemmed word occurance
     suspend fun instantiateAvgFreqMap(parent: LiteratureDaoActivity){
         Log.d("litdao", "Starting init of freq map")
@@ -175,58 +274,32 @@ open class LiteratureDaoActivity : BaseActivity() {
         return handler.scoreList(inp, loadMetaData().content)
     }
 
+    fun remoteSeach(query: String) {
+        // send to peers
+        IPv8Android.getInstance().getOverlay<LiteratureCommunity>()!!.broadcastSearchQuery(query)
+
+//        // DEBUG
+//        updateSearchResults(SearchResultList(listOf(SearchResult("f1", 1.0, "m1"), SearchResult("f2", 2.0, "m2"))))
+    }
+
+    fun updateSearchResults(results: SearchResultList){
+        // access UI and append results to some view
+        setContentView(R.layout.fragment_library_search)
+        val list = findViewById<ListView>(R.id.remote_search_results)
+        for (r : SearchResult in results.results){
+            if(!remoteSearchList.contains(r.fileName)){
+                remoteSearchList.add(r.fileName)
+            }
+        }
+        remoteSearchListAdapter.notifyDataSetChanged()
+    }
+
     fun writeMetaData(newData: KeyWordModelView.Data){
         metaDataLock.lock()
         this.openFileOutput("metaData", Context.MODE_PRIVATE).use { output ->
             output.write(Json.encodeToString(newData).toByteArray())
         }
         metaDataLock.unlock()
-    }
-
-    override fun onStart() {
-        super.onStart()
-//        Log.e("litdao", "starting ...")
-//
-//        try{
-//            //testImportPDF()
-//            //Log.e("litdao", loadMetaData().toString())
-//        } catch (e: Exception){
-//            Log.e("litdao", "litDao exception: " + e.toString())
-//        }
-//
-//        val searchView: SearchView = findViewById<SearchView>(R.id.searchViewLit)
-//
-//        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//
-//                return false
-//            }
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                if (!newText.isNullOrEmpty())
-//                    Log.d("litdao", localSearch(newText).toString())
-//                return false
-//            }
-//        })
-        //Log.d("litdao", localSearch("dpca").toString())
-//        Log.e("litdao", "starting ...")
-//
-//        val searchView: SearchView = findViewById<SearchView>(R.id.searchViewLit)
-//
-//        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//
-//                return false
-//            }
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                if (!newText.isNullOrEmpty())
-//                    Log.d("litdao", localSearch(newText).toString())
-//                return false
-//            }
-//        })
-//        Log.d("litdao", localSearch("dpca").toString())
-
     }
 
     fun testImportPDF(){
@@ -237,15 +310,6 @@ open class LiteratureDaoActivity : BaseActivity() {
             i += 1
         }
     }
-
-    //KeyWordModelView(this.baseContext).calcKWs("1.pdf")
-/*
-        try{
-            Log.e("litdao", "litDao read: " + read("1.pdf").content.toString())
-        } catch (e: Exception){
-            Log.e("litdao", "litDao exception: " + e.toString())
-       }*/
-
 
     /**
      * Display a short message on the screen
@@ -266,7 +330,10 @@ open class LiteratureDaoActivity : BaseActivity() {
                 outputStream.write(ins.readBytes())
                 ins.close()
                 outputStream.close()
-                this.createTorrent(DEFAULT_LITERATURE)
+                val torrent = this.createTorrent(DEFAULT_LITERATURE)
+                if (torrent != null) {
+                    literatureGossiper?.addTorrentInfo(torrent)
+                }
             }
         } catch (e: Exception) {
             this.printToast(e.toString())
@@ -274,15 +341,15 @@ open class LiteratureDaoActivity : BaseActivity() {
     }
 
     /**
-     * Creates a torrent from a file given as input
+     * Creates a torrent from a file in the cache directory
      * The extension of the file must be included (for example, .png)
      */
-    private fun createTorrent(fileName: String): TorrentInfo? {
+    fun createTorrent(fileName: String): TorrentInfo? {
         val file = File(applicationContext.cacheDir.absolutePath + "/" + fileName.split("/").last())
         if (!file.exists()) {
             runOnUiThread { printToast("Something went wrong, check logs") }
             Log.i("litdao", "File doesn't exist!")
-            return null
+            return null;
         }
 
         val fs = file_storage()
@@ -321,13 +388,13 @@ open class LiteratureDaoActivity : BaseActivity() {
         val ti = TorrentInfo.bdecode(Vectors.byte_vector2bytes(buffer))
         val magnetLink = preHashString + ti.infoHash() + displayNameAppender + ti.name()
         Log.i("litdao", magnetLink)
-        runOnUiThread { printToast(fileName) }
+        runOnUiThread { printToast(fileName + " is ready for gossiping.") }
         return ti
     }
 
 
-    @Serializable
-    data class Data(val content: MutableList<Pair<String, MutableList<Pair<String, Double>>>>)
+    //@Serializable
+    //data class Data(val content: MutableList<Pair<String, MutableList<Pair<String, Double>>>>): Serializable
 
     fun operations(path: String, baseContext: Context){
         PDFBoxResourceLoader.init(baseContext)
@@ -367,35 +434,82 @@ open class LiteratureDaoActivity : BaseActivity() {
         metaDataLock.unlock()
     }
 
-    override fun onActivityResult(requestCode:Int, resultCode:Int, data: Intent?)
-    {
-        if (requestCode == 100) {
-            var fileUri = data?.data
-            if (fileUri != null) {
-                val d = DocumentFile.fromSingleUri(this, fileUri)
-                if (d != null) {
-                    importFromInternalStorage(d)
-                    Log.d("litdao", "file name: " + d.name)
-                    Log.d("litdao", "file path: " + d.uri.path)
-                    var intent = Intent(Intent.ACTION_VIEW);
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setDataAndType(d.uri, "application/pdf");
-                    intent = Intent.createChooser(intent, "Open File");
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                }
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
 
+
+    @Serializable
+    data class Literature(
+        var title: String,
+        val magnet: String,
+        val keywords: MutableList<Pair<String, Double>>,
+        val local: Boolean
+    );
+
+
+    @RequiresApi(Build.VERSION_CODES.M)
     fun filePicker(view: View) {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"
         startActivityForResult(intent, 100)
-
     }
 
+    /**
+     * copy file from source to destination
+     *
+     * @param src source
+     * @param dst destination
+     * @throws java.io.IOException in case of any problems
+     */
+    @Throws(IOException::class)
+    fun copyFile(src: File?, dst: File?) {
+        try {
+            val inChannel = FileInputStream(src).channel
+            val outChannel = FileOutputStream(dst).channel
 
+            try {
+                inChannel.transferTo(0, inChannel.size(), outChannel)
+            } finally {
+                inChannel.close()
+                outChannel.close()
+            }
+        } catch (e: FileNotFoundException) {
+            Log.e("litdao", e.toString())
+        }
+    }
 
+    /**
+     * Check storage permissions
+     */
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun checkStoragePermissions() {
+        if ((ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSION_STORAGE_REQUEST_CODE
+            )
+        }
+    }
+
+    /**
+     * Process permission result
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == PERMISSION_STORAGE_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                Log.d("litdao", "STORAGE PERMISSION GRANTED")
+                printToast(resources.getString(R.string.litdao_permission_storage_granted))
+            } else {
+                Log.d("litdao", "STORAGE PERMISSION NOT GRANTED")
+                printToast(resources.getString(R.string.litdao_permission_denied))
+                finish()
+            }
+        }
+    }
+
+    companion object {
+        const val PERMISSION_STORAGE_REQUEST_CODE = 2
+    }
 }
