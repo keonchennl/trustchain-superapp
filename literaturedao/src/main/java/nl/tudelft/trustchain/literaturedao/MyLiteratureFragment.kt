@@ -2,6 +2,7 @@ package nl.tudelft.trustchain.literaturedao
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,6 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.SearchView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.serialization.decodeFromString
@@ -20,6 +23,7 @@ import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
+import java.util.stream.Collectors
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -32,6 +36,9 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class MyLiteratureFragment : Fragment(R.layout.fragment_my_literature) {
+
+    val localData: MutableList<Literature> = mutableListOf();
+    val adapter: ItemAdapter = ItemAdapter(localData)
 
     fun loadLocalData(): LocalData{
         // Load local data
@@ -76,18 +83,47 @@ class MyLiteratureFragment : Fragment(R.layout.fragment_my_literature) {
         val view : View =  inflater.inflate(R.layout.fragment_my_literature, container, false)
 
 
-        val json = loadLocalData();
+        val searchBar = view.findViewById<SearchView>(R.id.searchViewLit)
 
+        searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                Log.i("litdao", "perform local search with: "+query)
+                if(!query.isNullOrBlank()){
+                    localSearch(query)
+                    return true
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                Log.i("litdao", "change local search with: "+query)
+                return true
+            }
+        })
+
+
+        localData.addAll(loadLocalData().content);
         val recViewItems = view.findViewById<RecyclerView>(R.id.recycler_view_items);
 
-
-
         recViewItems.layoutManager = LinearLayoutManager(context )
-        recViewItems.adapter = ItemAdapter(json.content);
-
+        recViewItems.adapter = adapter
 
         // Inflate the layout for this fragment
         return view;
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun localSearch(query: String) {
+
+        val results = (context as LiteratureDaoActivity).localSearch(query)
+        val scores:Map<String, Double> = results.stream()
+            .collect(Collectors.toMap({a -> a.first}, {a -> a.second}))
+
+        Log.d("litdao", "results: "+results.toString())
+
+        localData.sortWith { a, b -> scores.get(a.title)!!.compareTo(scores.get(b.title)!!) }
+
+        adapter.refresh()
     }
 
     override fun onActivityResult(requestCode:Int, resultCode:Int, data: Intent?) {
