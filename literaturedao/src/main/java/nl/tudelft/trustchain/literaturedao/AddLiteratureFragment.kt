@@ -144,8 +144,10 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
 
 
 
+                    Log.e("litdao", "start load")
                     // Load local data
                     var fileInputStream: FileInputStream? = null
+
                     try{
                         fileInputStream = context?.openFileInput("localData")
                     } catch (e: FileNotFoundException){
@@ -162,11 +164,11 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
                         stringBuilder.append(text)
                     }
                     val localData: LocalData =  Json.decodeFromString<LocalData>(stringBuilder.toString())
-
+                    Log.e("litdao", "start add")
                     // add new entry to local data and write
 
                     localData.content.add(literatureObject)
-
+                    Log.e("litdao", "start write")
                     // write modified local data
                     context?.openFileOutput("localData", Context.MODE_PRIVATE).use { output ->
                         output?.write(Json.encodeToString(localData).toByteArray())
@@ -184,9 +186,11 @@ class AddLiteratureFragment : Fragment(R.layout.fragment_literature_add) {
                         view.findViewById<LinearLayout>(R.id.add_literature_done).visibility = View.VISIBLE
                     }
                 }
+
             } catch (ex: Exception ) {
                 // TODO: Show error
                 ex.printStackTrace()
+                Log.e("litdao", ex.toString())
             }
         }
         // Inflate the layout for this fragment
