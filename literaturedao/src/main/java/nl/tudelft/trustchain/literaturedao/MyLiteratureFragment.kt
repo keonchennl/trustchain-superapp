@@ -3,6 +3,7 @@ package nl.tudelft.trustchain.literaturedao
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -54,7 +55,7 @@ class MyLiteratureFragment : Fragment(R.layout.fragment_my_literature) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.d("litDao", loadLocalData().toString())
     }
 
     override fun onCreateView(
