@@ -13,6 +13,7 @@ import android.view.WindowManager
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.documentfile.provider.DocumentFile
 import com.frostwire.jlibtorrent.SessionManager
 import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.Vectors
@@ -31,6 +32,10 @@ import nl.tudelft.trustchain.literaturedao.data_types.LocalData
 import nl.tudelft.trustchain.literaturedao.ipv8.LiteratureCommunity
 import nl.tudelft.trustchain.literaturedao.ipv8.SearchResult
 import nl.tudelft.trustchain.literaturedao.ipv8.SearchResultList
+import nl.tudelft.trustchain.literaturedao.ipv8.LiteratureCommunity
+import nl.tudelft.trustchain.literaturedao.model.remote_search.SearchResultList
+import nl.tudelft.trustchain.literaturedao.ui.KeyWordModelView
+import nl.tudelft.trustchain.literaturedao.ui.RemoteSearchFragment
 import nl.tudelft.trustchain.literaturedao.utils.ExtensionUtils.Companion.torrentDotExtension
 import nl.tudelft.trustchain.literaturedao.utils.MagnetUtils.Companion.displayNameAppender
 import nl.tudelft.trustchain.literaturedao.utils.MagnetUtils.Companion.preHashString
@@ -48,7 +53,8 @@ open class LiteratureDaoActivity : BaseActivity() {
     // Setting Menu And Default routing
     override val navigationGraph = R.navigation.nav_literaturedao
     override val bottomNavigationMenu = R.menu.literature_navigation_menu
-    private val myLiteratureFragment = MyLiteratureFragment();
+    private val myLiteratureFragment = MyLiteratureFragment()
+    private lateinit var remoteSearchFragment: RemoteSearchFragment
 
     private val scope = CoroutineScope(Dispatchers.IO)
     var torrentList = ArrayList<Button>()
@@ -62,9 +68,6 @@ open class LiteratureDaoActivity : BaseActivity() {
 
     var freqMap = emptyMap<String, Long>()
     var freqMapInitialized = false
-
-    var remoteSearchList: MutableList<String> = mutableListOf()
-    lateinit var remoteSearchListAdapter : ArrayAdapter<*>
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,29 +134,6 @@ open class LiteratureDaoActivity : BaseActivity() {
 //        val magnet = torrentInfo.makeMagnetUri()
 //        val torrentInfoName = torrentInfo.name()
 
-        /*
-        // TODO: UI CONNECTION FOR REMOTE SEARCH
-        setContentView(R.layout.fragment_library_search)
-        val remoteSearch = findViewById<SearchView>(R.id.remote_search_bar)
-        remoteSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                Log.i("litdao", "perform remote search with: "+query)
-                if(!query.isNullOrBlank()){
-                    remoteSeach(query)
-                    return true
-                }
-                return false
-            }
-
-            override fun onQueryTextChange(query: String?): Boolean {
-                Log.i("litdao", "remote search text changed to: "+query)
-                return true
-            }
-        })
-
-        remoteSearchListAdapter = ArrayAdapter(this, R.layout.fragment_library_search_row, remoteSearchList)
-        findViewById<ListView>(R.id.remote_search_results).adapter = remoteSearchListAdapter
-        */
 
 
         //debug space
@@ -356,6 +336,14 @@ open class LiteratureDaoActivity : BaseActivity() {
                 finish()
             }
         }
+    }
+
+    fun setRemoteSearchFragment(fragment: RemoteSearchFragment){
+        this.remoteSearchFragment = fragment
+    }
+
+    fun updateSearchResults(results: SearchResultList) {
+        remoteSearchFragment.updateSearchResults(results)
     }
 
     companion object {

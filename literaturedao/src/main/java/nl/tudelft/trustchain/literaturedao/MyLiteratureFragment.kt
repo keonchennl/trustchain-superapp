@@ -40,7 +40,6 @@ class MyLiteratureFragment : Fragment(R.layout.fragment_my_literature) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.e("litdao", "Local data from my lit: " + loadLocalData().toString())
     }
 
     override fun onCreateView(

@@ -1,23 +1,20 @@
-package nl.tudelft.trustchain.literaturedao
+package nl.tudelft.trustchain.literaturedao.ui.adapters
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_custom_row.view.*
+import nl.tudelft.trustchain.literaturedao.R
 import nl.tudelft.trustchain.literaturedao.data_types.Literature
-import android.net.Uri;
-import androidx.core.net.toUri
+import nl.tudelft.trustchain.literaturedao.model.remote_search.SearchResult
 import java.lang.Integer.min
 
-class ItemAdapter(val items: MutableList<Literature>) :
-    RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
+class RemoteSearchResultAdapter(val items: MutableList<SearchResult>) :
+    RecyclerView.Adapter<RemoteSearchResultAdapter.ViewHolder>() {
 
     /**
      * Inflates the item views which is designed in xml layout file
@@ -28,7 +25,7 @@ class ItemAdapter(val items: MutableList<Literature>) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.fragment_literature,
+                R.layout.fragment_remote_search_result,
                 parent,
                 false
             )
@@ -50,30 +47,11 @@ class ItemAdapter(val items: MutableList<Literature>) :
         val item = items.get(position)
         Log.e("litdao", item.toString())
 
-        var keywords: String  = "";
-        var i = 0;
+        holder.LiteratureFragmentTitle.text = item.fileName
+        holder.LiteratureFragmentScore.text = "score: " + item.score
+        holder.LiteratureFragmentMagnet.text = "magnet: " + item.magnetLink
 
-        if(!item.keywords.isEmpty()) {
-            item.keywords.slice(0..min(3, item.keywords.size - 1)).forEach {
-                keywords = keywords.plus(it.first.plus(", "));
-                i++;
-            }
-        }
-
-        holder.LiteratureFragmentTitle.text = item.title;
-        holder.LiteratureFragmentDate.text = item.date;
-        holder.LiteratureFragmentKeywords.text = keywords;
-
-        holder.LiteratureFragmentHolder.setOnClickListener {
-            var intent = Intent(Intent.ACTION_VIEW)
-            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            intent.setDataAndType(item.localFileUri.toUri(), "application/pdf")
-            intent = Intent.createChooser(intent, "Open File")
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            holder.LiteratureFragmentKeywords.context.startActivity(intent)
-        }
     }
-
 
     /**
      * Gets the number of items in the list
@@ -87,10 +65,9 @@ class ItemAdapter(val items: MutableList<Literature>) :
      */
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         // Holds the TextView that will add each item to
-        val LiteratureFragmentTitle: TextView = view.findViewById<TextView>(R.id.literature_fragment_title)
-        val LiteratureFragmentKeywords: TextView = view.findViewById<TextView>(R.id.keywords)
-        val LiteratureFragmentDate: TextView = view.findViewById<TextView>(R.id.date)
-        val LiteratureFragmentHolder: LinearLayout = view.findViewById<LinearLayout>(R.id.lit_item)
+        val LiteratureFragmentTitle: TextView = view.findViewById(R.id.search_result_title)
+        val LiteratureFragmentScore: TextView = view.findViewById(R.id.search_result_score)
+        val LiteratureFragmentMagnet: TextView = view.findViewById(R.id.search_result_magnet)
     }
 
     fun refresh(){
